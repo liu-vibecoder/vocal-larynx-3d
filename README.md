@@ -30,7 +30,7 @@
 
 **方式一：在线访问（推荐）**
 
-直接打开公开网址（GitHub Pages / Gitee Pages，做法见 `DEPLOY.md`），电脑、手机都能用，不用下载、不用安装。
+直接打开公开网址 **<https://liu-vibecoder.github.io/vocal-larynx-3d/>**（GitHub Pages 托管），电脑、手机都能用，不用下载、不用安装。自建站点的做法见 `DEPLOY.md`。
 
 **方式二：本地离线（要起一个本地静态服务器）**
 
