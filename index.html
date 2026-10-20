@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="免费 3D 喉部解剖与发声教学演示，含六块喉内肌演示和第1课 15 题自测；可离线使用（需同时带 lib 目录）。">
 <link rel="icon" href="data:,">
-<title>声乐教学喉部模型3D演示版 v2.64</title>
+<title>声乐教学喉部模型3D演示版 v2.65</title>
 <style>
 /* ========== 纸面图册主题（书页风） ========== */
 :root{
@@ -385,7 +385,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 <body>
 <header>
   <div class="hLeft">
-    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.64</span></h1>
+    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.65</span></h1>
     <div class="tagline">我想让每个普通人学得起唱歌 · 刘伟晨</div>
   </div>
   <!-- M4：独立「联动」页移除——顶部四标签改为可勾选图层：
@@ -404,7 +404,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
          DOM 里写死，不在脚本里动态创建。 -->
     <div id="vlLoadMask" role="status" aria-live="polite">
       <div class="vlCard">
-        <div class="vlTitle" id="vlLoadTitle">正在载入页面数据…</div>
+        <div class="vlTitle" id="vlLoadTitle">正在构建 3D 模型…</div>
         <div class="vlBar" aria-hidden="true"><i id="vlLoadFill"></i></div>
         <div class="vlFoot" aria-hidden="true"><span class="vlPct" id="vlLoadPct">已加载 0%</span></div>
         <div class="vlSlow" id="vlLoadSlow">网络较慢，正在继续加载，请勿关闭页面</div>
@@ -415,7 +415,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
     /* ===== v2.64 载入提示控制（内联：紧跟遮罩元素，先于主脚本执行，不依赖外部资源） =====
        真实百分比：正文里 9 个「解析进度锚点」（10/19/32/40/50/60/71/78/90，按真实字节偏移）+ 末尾 1 个 100 锚点，
        每个锚点都是一行极短的内联脚本，解析到该位置即回调 window.__vlP(N)（不写标签字面量，避免提前闭合本脚本块）；
-       收到 100 → 文案切「正在构建 3D 模型…」，进度条按已进 DOM 的 OBJ 块数/88 在 95→100 之间收口；
+       收到 100 → 文案切「模型即将就绪…」，进度条按已进 DOM 的 OBJ 块数/88 在 95→100 之间收口；
        3D 首帧 → 100% → 停留 350ms → 300ms 淡出 → 移除。
        v2.64：删除「已用 X.Xs」及其 500ms interval；慢网提示改单次 30s setTimeout；aria-live 只播报阶段文案，
        百分比行整行 aria-hidden，不逐跳播报。stage 只写日志不切文案。 */
@@ -475,7 +475,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
       function startBuild(){                         /* 尾部 100 锚点：全部 OBJ 数据块已解析 */
         if(done||dataDone) return;
         dataDone=true; LOG.dataDone=ms();
-        if(TB) TB.textContent="正在构建 3D 模型…";    /* 唯一会被 aria-live 播报的文案变化 */
+        if(TB) TB.textContent="模型即将就绪…";    /* 唯一会被 aria-live 播报的文案变化 */
         creep();
       }
       window.__vlLoad={
