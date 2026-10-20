@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="免费 3D 喉部解剖与发声教学演示，含六块喉内肌演示和第1课 15 题自测；可离线使用（需同时带 lib 目录）。">
 <link rel="icon" href="data:,">
-<title>声乐教学喉部模型3D演示版 v2.66</title>
+<title>声乐教学喉部模型3D演示版 v2.69</title>
 <style>
 /* ========== 纸面图册主题（书页风） ========== */
 :root{
@@ -398,7 +398,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 <body>
 <header>
   <div class="hLeft">
-    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.66</span></h1>
+    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.69</span></h1>
     <div class="tagline">我想让每个普通人学得起唱歌 · 刘伟晨</div>
   </div>
   <!-- M4：独立「联动」页移除——顶部四标签改为可勾选图层：
@@ -615,16 +615,21 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 </main>
 <!-- M5：解剖网格数据署名（OBJ 数据内嵌=许可允许的演绎使用，不嵌入书页插图） -->
 <footer id="attrFooter">
-  解剖网格数据 © BodyParts3D 4.0＋3.0（DBCLS），依 CC BY-SA 2.1 JP 使用，须署名并以相同方式共享，许可证 creativecommons.org/licenses/by-sa/2.1/jp/，本作品对网格的修改见 LICENSE；页面代码、文案与题库 © 刘伟晨，个人学习与非营利课堂免费，商用需书面授权
-  <div id="creditLine">我想让每个普通人学得起唱歌 · © 刘伟晨 · 代码/文案/题库：个人学习与非营利课堂免费，商用需书面授权 · <button type="button" id="btnAbout" class="aboutLink">关于</button></div>
+  解剖网格数据 © BodyParts3D 4.0＋3.0（DBCLS），依 CC BY-SA 2.1 JP 使用，须署名并以相同方式共享，许可证 creativecommons.org/licenses/by-sa/2.1/jp/，本作品对网格的修改见 LICENSE；页面代码、文案与题库 © 刘伟晨 · 使用免费（含商用）· 修改后商用需授权（抖音搜「刘伟晨」）· 署名不得删改
+  <div id="creditLine">我想让每个普通人学得起唱歌 · 刘伟晨 · 使用免费（含商用）· 修改后商用需授权（抖音搜「刘伟晨」）· 署名不得删改 · <button type="button" id="btnAbout" class="aboutLink">关于</button></div>
   <div id="aboutMask" class="hidden">
     <div id="aboutBox">
       <h3>关于 · 声乐教学喉部模型3D演示版</h3>
       <p class="abSlogan">我想让每个普通人学得起唱歌。</p>
       <p>作者：刘伟晨</p>
-      <p>代码/文案/题库：个人学习与非营利课堂免费；商用（含培训机构使用、二次开发后收费等）需书面授权（抖音：刘伟晨教唱歌）。</p>
+      <p><strong>免费使用（含商用）</strong>：可以原样使用、公开传播，包括收费课程、付费学员等商业场景，无需授权。</p>
+      <p><strong>修改</strong>：自己修改、改进、分享修改版都免费，无需授权；但修改后用于商业用途，须先取得作者书面授权。</p>
+      <p><strong>商用指</strong>：向学员收费、接受打赏或赞助、投放广告或带货分成、作为付费产品或企业内训的一部分提供、二次开发后收费分发等。免费课堂、公益教学、个人学习不属于商用。</p>
+      <p><strong>署名</strong>：任何情况下不得去除、替换、缩小作者署名与出处；不得以作者名义为你的产品、课程或服务背书。</p>
+      <p><strong>违规处理</strong>：如违反上述要求，作者将要求你在 7 日内停止使用、删除或下架相关内容，并在你的发布渠道显著位置公开致歉（保留不少于 30 天，内容须经作者确认），并按 LICENSE 第 10 条承担赔偿。</p>
+      <p><strong>授权与联系</strong>：抖音搜索「刘伟晨」，或 <a href="https://github.com/liu-vibecoder/vocal-larynx-3d/issues" target="_blank" rel="noopener">GitHub Issues</a>。</p>
+      <p>解剖网格数据来自 <a href="https://lifesciencedb.jp/bp3d/" target="_blank" rel="noopener">BodyParts3D</a> 4.0 与 3.0（© DBCLS，Database Center for Life Science），依 <a href="https://creativecommons.org/licenses/by-sa/2.1/jp/" target="_blank" rel="noopener">CC BY-SA 2.1 JP</a> 使用与再分发。该数据的使用条件由这份许可证规定：必须保留 BodyParts3D / DBCLS 的署名与许可标注，修改后的网格须以相同许可共享（本作品做过配准、量化、旋转缩放、顶点焊接、重命名等修改）——这是数据本身的许可，与作者无关；本页面的代码、文案与题库不适用此许可（作者的许可见上文）。任何情况下请勿去除上述署名。</p>
       <p>本页面为声乐教学演示工具，不构成医学诊断或治疗建议。</p>
-      <p>解剖网格数据来自 <a href="https://lifesciencedb.jp/bp3d/" target="_blank" rel="noopener">BodyParts3D</a> 4.0 与 3.0（© DBCLS，Database Center for Life Science），依 <a href="https://creativecommons.org/licenses/by-sa/2.1/jp/" target="_blank" rel="noopener">CC BY-SA 2.1 JP</a> 使用与再分发。该数据的使用条件由这份许可证规定：必须保留 BodyParts3D / DBCLS 的署名与许可标注，修改后的网格须以相同许可共享（本作品做过配准、量化、旋转缩放、顶点焊接、重命名等修改）——这是数据本身的许可，与作者无关；本页面的代码、文案与题库不适用此许可，商用需作者书面授权。任何情况下请勿去除上述署名。</p>
       <button type="button" id="btnAboutClose" class="aboutLink">关闭</button>
     </div>
   </div>
@@ -674,7 +679,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
       <textarea id="qz-report" class="hidden" readonly style="width:100%;min-height:120px;margin-top:8px;font-size:12px;border:1px solid #ddd;border-radius:8px;padding:10px;box-sizing:border-box;"></textarea>
     </div>
     <div class="qz-foot">
-      <div class="qz-foot-info">抖音：<strong>刘伟晨教唱歌</strong>（商用需书面授权）</div>
+      <div class="qz-foot-info">抖音：<strong>刘伟晨</strong>（修改后商用需授权）</div>
       <div class="qz-foot-tag">零基础也能学会混声</div>
       <div style="margin-top:10px;padding:10px 12px;background:#f9f9f9;border-radius:8px;font-size:14px;font-weight:700;color:#555;text-align:center;">"我想让每个普通人都学得起唱歌。" ——刘伟晨</div>
     </div>
