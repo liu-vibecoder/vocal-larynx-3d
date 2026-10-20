@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="免费 3D 喉部解剖与发声教学演示，含六块喉内肌演示和第1课 15 题自测；可离线使用（需同时带 lib 目录）。">
 <link rel="icon" href="data:,">
-<title>声乐教学喉部模型3D演示版 v2.61</title>
+<title>声乐教学喉部模型3D演示版 v2.63</title>
 <style>
 /* ========== 纸面图册主题（书页风） ========== */
 :root{
@@ -335,11 +335,57 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
   }
 }
 </script>
+<style id="vlLoadStyle">
+/* ===== v2.63 载入提示：只盖 3D 舞台（作用域收窄）=====
+   挂在 #stageWrap（.stage，本就 position:relative）内部做绝对定位，只覆盖画布区；
+   页头 / 章节导航 / 右侧面板全部照常可见可点；不再有任何全屏蒙层。
+   配色・圆角・投影沿用纸面图册主题（--bg/--panel/--line/--txt/--dim/--acc），不新增色值。 */
+#vlLoadMask{
+  position:absolute; inset:0; z-index:8;   /* 舞台内绝对定位：移出文档流、不参与布局；z 高于 #lblLayer(5) */
+  display:flex; align-items:center; justify-content:center;
+  padding:12px;                           /* 卡片离舞台边缘留呼吸位，窄舞台也不贴边 */
+  background:rgba(247,242,232,.97);       /* = var(--bg,#f7f2e8) 同色 0.97：只压一层纸底，不挡布局 */
+  color:var(--txt,#2a2a2a);
+  font:14px/1.65 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+  opacity:1; transition:opacity .3s ease;
+}
+#vlLoadMask.vlOut{ opacity:0; }
+#vlLoadMask ~ #glTip{ opacity:0; }      /* v2.63：遮罩在 DOM 期间藏掉左下角操作提示，不透出底字；遮罩移除后本规则自动失效，恢复正常显示 */
+#vlLoadMask .vlCard{
+  width:min(340px, calc(100% - 8px));     /* 小卡片：舞台窄时按舞台宽度收缩，不撑破 */
+  background:var(--panel,#fdf9ee); border:1px solid var(--line,#d9cfb8);
+  border-radius:10px; padding:16px 18px 13px; text-align:center;
+  box-shadow:0 8px 30px rgba(60,45,20,.25);          /* 与 #aboutBox 同款纸卡投影 */
+}
+#vlLoadMask .vlTitle{ font-size:15px; font-weight:700; color:var(--txt,#2a2a2a); }
+#vlLoadMask .vlBar{
+  position:relative; overflow:hidden; height:8px; margin:12px 0 0;
+  background:#efe6d0; border:1px solid var(--line,#d9cfb8); border-radius:6px;   /* 与按钮底色/描边同源 */
+}
+#vlLoadMask .vlBar i{                                /* 不确定进度：流动光带，不显示假百分比 */
+  position:absolute; top:0; bottom:0; left:-34%; width:34%; border-radius:6px;
+  background:linear-gradient(90deg, rgba(163,78,58,0), var(--acc,#a34e3a) 62%, rgba(163,78,58,0));
+  animation:vlSweep 1.25s linear infinite;
+}
+@keyframes vlSweep{ from{ left:-34%; } to{ left:100%; } }
+#vlLoadMask .vlFoot{ margin:7px 0 0; font-size:12px; color:var(--dim,#7c7362); }
+#vlLoadMask .vlTime{ font-variant-numeric:tabular-nums; }   /* 计时段位定宽，不抖 */
+#vlLoadMask .vlSlow{                                /* 慢网第二行：>30s 才出现，沿用 .tipBar 提示条样式 */
+  display:none; margin:10px 0 0; padding:6px 10px; font-size:12px;
+  border-left:3px solid var(--acc,#a34e3a); border-radius:0 8px 8px 0;
+  background:#f3ecd9; color:#5c4f3c; text-align:left;
+}
+#vlLoadMask .vlSlow.on{ display:block; }
+@media (prefers-reduced-motion: reduce){
+  #vlLoadMask{ transition:none; }
+  #vlLoadMask .vlBar i{ animation:none; left:0; width:34%; }
+}
+</style>
 </head>
 <body>
 <header>
   <div class="hLeft">
-    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.61</span></h1>
+    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.63</span></h1>
     <div class="tagline">我想让每个普通人学得起唱歌 · 刘伟晨</div>
   </div>
   <!-- M4：独立「联动」页移除——顶部四标签改为可勾选图层：
@@ -352,6 +398,69 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 <main>
   <!-- 左：3D 画布（四章节共用一个 renderer，切章切换场景组） -->
   <section class="stage" id="stageWrap" aria-label="3D 教学模型">
+    <!-- ===== v2.63 载入提示：舞台内定位（只盖 3D 画布区，页头与右侧面板照常可见可点）=====
+         放在 #stageWrap 内、#glHost 之前：解析到舞台这一行即渲染，不等主脚本与 3D 库；
+         position:absolute; inset:0（.stage 已是 position:relative）→ 移出文档流、不给页面加位移；
+         DOM 里写死，不在脚本里动态创建。 -->
+    <div id="vlLoadMask" role="status" aria-live="polite">
+      <div class="vlCard">
+        <div class="vlTitle">正在构建 3D 模型…</div>
+        <div class="vlBar" aria-hidden="true"><i></i></div>
+        <div class="vlFoot" aria-hidden="true"><span class="vlTime" id="vlLoadTime">已用 0.0s</span></div>
+        <div class="vlSlow" id="vlLoadSlow">网络较慢，正在继续加载，请勿关闭页面</div>
+      </div>
+    </div>
+    <noscript><style>#vlLoadMask{ display:none !important; }</style></noscript>   <!-- 脚本禁用时绝不卡在遮罩上 -->
+    <script>
+    /* ===== v2.63 载入提示控制（内联：紧跟遮罩元素，先于主脚本执行，不依赖外部资源） =====
+       文案收窄成一句「正在构建 3D 模型…」+「已用 Xs」，>30s 追加慢网句；
+       逻辑骨架不变：首帧 → 停留 350ms → 300ms 淡出 → 移除；失败 → 立即淡出露出原有中文提示；
+       计时器在移除时 clearInterval。stage 只写日志不切文案（三阶段文案已删）。 */
+    (function(){
+      var M=document.getElementById("vlLoadMask");
+      if(!M) return;
+      var TIM=document.getElementById("vlLoadTime"), SLOW=document.getElementById("vlLoadSlow");
+      var NOW=function(){ return (window.performance&&performance.now)?performance.now():Date.now(); };
+      var T0=NOW(), stage=1, done=false, iv=null, fadeTimer=null;
+      var LOG=window.__vlLoadLog={ t0:T0, stage1:0, stage2:null, firstFrame:null, faded:null, removed:null, failReason:null };
+      function ms(){ return NOW()-T0; }
+      function setStage(n){ if(done||n<=stage) return; stage=n; LOG["stage"+n]=ms(); }   /* 只记事件，不改文案 */
+      function updateTimer(){
+        TIM.textContent="已用 "+(ms()/1000).toFixed(1)+"s";
+        if(ms()>=30000) SLOW.classList.add("on");    /* 超过 30 秒：追加第二行慢网提醒 */
+      }
+      iv=setInterval(updateTimer,500); updateTimer();
+      function stopTimers(){ if(iv){ clearInterval(iv); iv=null; } if(fadeTimer){ clearTimeout(fadeTimer); fadeTimer=null; } }
+      function removeMask(){ if(M&&M.parentNode){ M.parentNode.removeChild(M); LOG.removed=ms(); } }
+      function hide(){                                 /* 300ms 淡出 → 移除 DOM，不留任何遮挡 */
+        if(done) return; done=true; stopTimers(); updateTimer();
+        LOG.faded=ms(); M.classList.add("vlOut");
+        setTimeout(removeMask,300);
+      }
+      function toStage2(){ setStage(2); }
+      if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded",toStage2,{once:true}); }
+      else{ toStage2(); }
+      window.__vlLoad={
+        firstFrame:function(){                         /* 主脚本：3D 首帧真实渲染完成 */
+          if(done) return;
+          setStage(3); LOG.firstFrame=ms(); LOG.stage3=LOG.firstFrame;
+          fadeTimer=setTimeout(hide,350);              /* 让成品露脸 350ms 再淡出 */
+        },
+        fail:function(why){                            /* 主脚本：3D 初始化失败（原有降级分支） */
+          if(done) return;
+          LOG.failReason=String((why&&why.message)||why||"3D 初始化失败").slice(0,160);
+          hide();
+        },
+        state:function(){ return { stage:stage, done:done, ms:ms(), ivAlive:!!iv, maskInDom:!!document.getElementById("vlLoadMask") }; }
+      };
+      /* 兜底：未捕获脚本异常 → 按失败处理，遮罩不会永久卡住（资源 404 不触发） */
+      window.addEventListener("error",function(e){
+        if(!e||!e.message) return;
+        if(e.target&&e.target!==window&&e.target.tagName) return;
+        if(window.__vlLoad) window.__vlLoad.fail("uncaught: "+e.message);
+      },true);
+    })();
+    </script>
     <div id="glHost"></div>
     <!-- 常驻标签层：HTML 标签挂 lblLayer，细引线画在 lblSvg（A1） -->
     <svg id="lblSvg" aria-hidden="true"></svg>
@@ -547328,6 +547437,7 @@ async function initThree(){
       try{ updateLabels(); }catch(eL){ if(!T._errOnce){ T._errOnce=true; console.error('[自检·标签] 每帧标签更新异常（首报）：', eL); } }
       T._rn=(T._rn||0)+1;   /* 渲染行帧计数（区分「主循环在跑」与「渲染行到达」——粒子冻结定位用） */
       (outlineFx||renderer).render(scene,camera);
+      if(T._rn===1&&window.__vlLoad){ window.__vlLoad.firstFrame(); }   /* v2.63：3D 首帧真实渲染完成 → 遮罩停留 350ms 后淡出 */
     };
 
     /* --- 只读调试口（自检/走查用）：挂载集合与统一坐标系变换 --- */
@@ -547411,6 +547521,7 @@ async function initThree(){
     fb.title='3D 未加载：请确认 lib 目录完整并通过 http(s) 打开';
     fb.classList.remove('hidden');
     $('glTip').classList.add('hidden');
+    if(window.__vlLoad){ window.__vlLoad.fail(err); }   /* v2.63：3D 降级分支 → 遮罩立即淡出，露出下方原有中文失败提示 */
   }
 }
 
