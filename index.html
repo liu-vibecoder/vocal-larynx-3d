@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="免费 3D 喉部解剖与发声教学演示，含六块喉内肌演示和第1课 15 题自测；可离线使用（需同时带 lib 目录）。">
 <link rel="icon" href="data:,">
-<title>声乐教学喉部模型3D演示版 v2.63</title>
+<title>声乐教学喉部模型3D演示版 v2.64</title>
 <style>
 /* ========== 纸面图册主题（书页风） ========== */
 :root{
@@ -336,9 +336,10 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 }
 </script>
 <style id="vlLoadStyle">
-/* ===== v2.63 载入提示：只盖 3D 舞台（作用域收窄）=====
+/* ===== v2.64 载入提示：真实百分比进度条（仍只盖 3D 舞台）=====
    挂在 #stageWrap（.stage，本就 position:relative）内部做绝对定位，只覆盖画布区；
    页头 / 章节导航 / 右侧面板全部照常可见可点；不再有任何全屏蒙层。
+   v2.64：删「已用 X.Xs」计时行，改显示真实文档解析百分比「已加载 N%」；进度条改实心填充。
    配色・圆角・投影沿用纸面图册主题（--bg/--panel/--line/--txt/--dim/--acc），不新增色值。 */
 #vlLoadMask{
   position:absolute; inset:0; z-index:8;   /* 舞台内绝对定位：移出文档流、不参与布局；z 高于 #lblLayer(5) */
@@ -350,7 +351,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
   opacity:1; transition:opacity .3s ease;
 }
 #vlLoadMask.vlOut{ opacity:0; }
-#vlLoadMask ~ #glTip{ opacity:0; }      /* v2.63：遮罩在 DOM 期间藏掉左下角操作提示，不透出底字；遮罩移除后本规则自动失效，恢复正常显示 */
+#vlLoadMask ~ #glTip{ opacity:0; }      /* v2.64：遮罩在 DOM 期间藏掉左下角操作提示，不透出底字；遮罩移除后本规则自动失效，恢复正常显示 */
 #vlLoadMask .vlCard{
   width:min(340px, calc(100% - 8px));     /* 小卡片：舞台窄时按舞台宽度收缩，不撑破 */
   background:var(--panel,#fdf9ee); border:1px solid var(--line,#d9cfb8);
@@ -362,14 +363,13 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
   position:relative; overflow:hidden; height:8px; margin:12px 0 0;
   background:#efe6d0; border:1px solid var(--line,#d9cfb8); border-radius:6px;   /* 与按钮底色/描边同源 */
 }
-#vlLoadMask .vlBar i{                                /* 不确定进度：流动光带，不显示假百分比 */
-  position:absolute; top:0; bottom:0; left:-34%; width:34%; border-radius:6px;
-  background:linear-gradient(90deg, rgba(163,78,58,0), var(--acc,#a34e3a) 62%, rgba(163,78,58,0));
-  animation:vlSweep 1.25s linear infinite;
+#vlLoadMask .vlBar i{                                /* v2.64：实心填充，宽度=真实已解析百分比，transition 平滑，不做假动画 */
+  position:absolute; top:0; bottom:0; left:0; width:0%; border-radius:6px;
+  background:var(--acc,#a34e3a);
+  transition:width .3s ease;
 }
-@keyframes vlSweep{ from{ left:-34%; } to{ left:100%; } }
 #vlLoadMask .vlFoot{ margin:7px 0 0; font-size:12px; color:var(--dim,#7c7362); }
-#vlLoadMask .vlTime{ font-variant-numeric:tabular-nums; }   /* 计时段位定宽，不抖 */
+#vlLoadMask .vlPct{ font-variant-numeric:tabular-nums; }    /* 百分比数字定宽，跳动时不左右抖 */
 #vlLoadMask .vlSlow{                                /* 慢网第二行：>30s 才出现，沿用 .tipBar 提示条样式 */
   display:none; margin:10px 0 0; padding:6px 10px; font-size:12px;
   border-left:3px solid var(--acc,#a34e3a); border-radius:0 8px 8px 0;
@@ -378,14 +378,14 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 #vlLoadMask .vlSlow.on{ display:block; }
 @media (prefers-reduced-motion: reduce){
   #vlLoadMask{ transition:none; }
-  #vlLoadMask .vlBar i{ animation:none; left:0; width:34%; }
+  #vlLoadMask .vlBar i{ transition:none; }
 }
 </style>
 </head>
 <body>
 <header>
   <div class="hLeft">
-    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.63</span></h1>
+    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.64</span></h1>
     <div class="tagline">我想让每个普通人学得起唱歌 · 刘伟晨</div>
   </div>
   <!-- M4：独立「联动」页移除——顶部四标签改为可勾选图层：
@@ -398,60 +398,101 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 <main>
   <!-- 左：3D 画布（四章节共用一个 renderer，切章切换场景组） -->
   <section class="stage" id="stageWrap" aria-label="3D 教学模型">
-    <!-- ===== v2.63 载入提示：舞台内定位（只盖 3D 画布区，页头与右侧面板照常可见可点）=====
+    <!-- ===== v2.64 载入提示：舞台内定位（只盖 3D 画布区，页头与右侧面板照常可见可点）=====
          放在 #stageWrap 内、#glHost 之前：解析到舞台这一行即渲染，不等主脚本与 3D 库；
          position:absolute; inset:0（.stage 已是 position:relative）→ 移出文档流、不给页面加位移；
          DOM 里写死，不在脚本里动态创建。 -->
     <div id="vlLoadMask" role="status" aria-live="polite">
       <div class="vlCard">
-        <div class="vlTitle">正在构建 3D 模型…</div>
-        <div class="vlBar" aria-hidden="true"><i></i></div>
-        <div class="vlFoot" aria-hidden="true"><span class="vlTime" id="vlLoadTime">已用 0.0s</span></div>
+        <div class="vlTitle" id="vlLoadTitle">正在载入页面数据…</div>
+        <div class="vlBar" aria-hidden="true"><i id="vlLoadFill"></i></div>
+        <div class="vlFoot" aria-hidden="true"><span class="vlPct" id="vlLoadPct">已加载 0%</span></div>
         <div class="vlSlow" id="vlLoadSlow">网络较慢，正在继续加载，请勿关闭页面</div>
       </div>
     </div>
     <noscript><style>#vlLoadMask{ display:none !important; }</style></noscript>   <!-- 脚本禁用时绝不卡在遮罩上 -->
     <script>
-    /* ===== v2.63 载入提示控制（内联：紧跟遮罩元素，先于主脚本执行，不依赖外部资源） =====
-       文案收窄成一句「正在构建 3D 模型…」+「已用 Xs」，>30s 追加慢网句；
-       逻辑骨架不变：首帧 → 停留 350ms → 300ms 淡出 → 移除；失败 → 立即淡出露出原有中文提示；
-       计时器在移除时 clearInterval。stage 只写日志不切文案（三阶段文案已删）。 */
+    /* ===== v2.64 载入提示控制（内联：紧跟遮罩元素，先于主脚本执行，不依赖外部资源） =====
+       真实百分比：正文里 9 个「解析进度锚点」（10/19/32/40/50/60/71/78/90，按真实字节偏移）+ 末尾 1 个 100 锚点，
+       每个锚点都是一行极短的内联脚本，解析到该位置即回调 window.__vlP(N)（不写标签字面量，避免提前闭合本脚本块）；
+       收到 100 → 文案切「正在构建 3D 模型…」，进度条按已进 DOM 的 OBJ 块数/88 在 95→100 之间收口；
+       3D 首帧 → 100% → 停留 350ms → 300ms 淡出 → 移除。
+       v2.64：删除「已用 X.Xs」及其 500ms interval；慢网提示改单次 30s setTimeout；aria-live 只播报阶段文案，
+       百分比行整行 aria-hidden，不逐跳播报。stage 只写日志不切文案。 */
     (function(){
+      var noop=function(){}; window.__vlP=noop;    /* 锚点安全网：本脚本即便早退，锚点调用也绝不抛错 */
       var M=document.getElementById("vlLoadMask");
       if(!M) return;
-      var TIM=document.getElementById("vlLoadTime"), SLOW=document.getElementById("vlLoadSlow");
+      var TB=document.getElementById("vlLoadTitle"), PCT=document.getElementById("vlLoadPct"),
+          FILL=document.getElementById("vlLoadFill"), SLOW=document.getElementById("vlLoadSlow");
       var NOW=function(){ return (window.performance&&performance.now)?performance.now():Date.now(); };
-      var T0=NOW(), stage=1, done=false, iv=null, fadeTimer=null;
-      var LOG=window.__vlLoadLog={ t0:T0, stage1:0, stage2:null, firstFrame:null, faded:null, removed:null, failReason:null };
+      var T0=NOW(), stage=1, done=false, pct=0, dataDone=false, tries=0;
+      var slowTimer=null, creepTimer=null, fadeTimer=null, removeTimer=null;
+      var LOG=window.__vlLoadLog={ t0:T0, stage1:0, stage2:null, dataDone:null, firstFrame:null,
+                                   faded:null, removed:null, slow:null, failReason:null, pctSeq:[] };
       function ms(){ return NOW()-T0; }
-      function setStage(n){ if(done||n<=stage) return; stage=n; LOG["stage"+n]=ms(); }   /* 只记事件，不改文案 */
-      function updateTimer(){
-        TIM.textContent="已用 "+(ms()/1000).toFixed(1)+"s";
-        if(ms()>=30000) SLOW.classList.add("on");    /* 超过 30 秒：追加第二行慢网提醒 */
+      function setStage(n){ if(done||n<=stage) return; stage=n; LOG["stage"+n]=ms(); }
+      function paint(n){                             /* 百分比只增不减：任何倒退读数直接丢弃 */
+        n=Math.round(n); if(n>100) n=100; if(n<pct) n=pct;
+        if(n===pct) return;
+        pct=n; if(FILL) FILL.style.width=n+"%";
+        if(PCT) PCT.textContent="已加载 "+n+"%";
+        LOG.pctSeq.push({ n:n, t:ms() });
       }
-      iv=setInterval(updateTimer,500); updateTimer();
-      function stopTimers(){ if(iv){ clearInterval(iv); iv=null; } if(fadeTimer){ clearTimeout(fadeTimer); fadeTimer=null; } }
-      function removeMask(){ if(M&&M.parentNode){ M.parentNode.removeChild(M); LOG.removed=ms(); } }
-      function hide(){                                 /* 300ms 淡出 → 移除 DOM，不留任何遮挡 */
-        if(done) return; done=true; stopTimers(); updateTimer();
+      window.__vlP=function(n){ if(done||dataDone) return; if(n>=100){ startBuild(); return; } paint(n); };
+
+      slowTimer=setTimeout(function(){               /* 慢网提示：单次定时，不再有 500ms interval */
+        if(done) return;
+        if(SLOW){ SLOW.classList.add("on"); LOG.slow=ms(); }
+      },30000);
+
+      function stopTimers(){
+        if(slowTimer){ clearTimeout(slowTimer); slowTimer=null; }
+        if(creepTimer){ clearTimeout(creepTimer); creepTimer=null; }
+        if(fadeTimer){ clearTimeout(fadeTimer); fadeTimer=null; }
+        if(removeTimer){ clearTimeout(removeTimer); removeTimer=null; }
+      }
+      function removeMask(){
+        removeTimer=null;
+        if(M&&M.parentNode){ M.parentNode.removeChild(M); LOG.removed=ms(); }
+      }
+      function hide(){                               /* 300ms 淡出 → 移除 DOM，不留任何遮挡 */
+        if(done) return; done=true; stopTimers();
         LOG.faded=ms(); M.classList.add("vlOut");
-        setTimeout(removeMask,300);
+        if(!removeTimer) removeTimer=setTimeout(removeMask,300);
       }
       function toStage2(){ setStage(2); }
       if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded",toStage2,{once:true}); }
       else{ toStage2(); }
+
+      function creep(){                              /* 收尾：95→100 按已进 DOM 的 OBJ 块数推进，够了就到 100 */
+        creepTimer=null;
+        if(done||!dataDone) return;
+        var n=document.querySelectorAll("script.meshobj").length;
+        paint(95+5*Math.min(1,n/88));
+        if(n<88&&tries<40){ tries++; creepTimer=setTimeout(creep,120); }
+      }
+      function startBuild(){                         /* 尾部 100 锚点：全部 OBJ 数据块已解析 */
+        if(done||dataDone) return;
+        dataDone=true; LOG.dataDone=ms();
+        if(TB) TB.textContent="正在构建 3D 模型…";    /* 唯一会被 aria-live 播报的文案变化 */
+        creep();
+      }
       window.__vlLoad={
-        firstFrame:function(){                         /* 主脚本：3D 首帧真实渲染完成 */
+        firstFrame:function(){                       /* 主脚本：3D 首帧真实渲染完成 */
           if(done) return;
           setStage(3); LOG.firstFrame=ms(); LOG.stage3=LOG.firstFrame;
-          fadeTimer=setTimeout(hide,350);              /* 让成品露脸 350ms 再淡出 */
+          paint(100);
+          fadeTimer=setTimeout(hide,350);            /* 让成品露脸 350ms 再淡出 */
         },
-        fail:function(why){                            /* 主脚本：3D 初始化失败（原有降级分支） */
+        fail:function(why){                          /* 主脚本：3D 初始化失败（原有降级分支） */
           if(done) return;
           LOG.failReason=String((why&&why.message)||why||"3D 初始化失败").slice(0,160);
           hide();
         },
-        state:function(){ return { stage:stage, done:done, ms:ms(), ivAlive:!!iv, maskInDom:!!document.getElementById("vlLoadMask") }; }
+        state:function(){ return { stage:stage, done:done, ms:ms(), pct:pct, dataDone:dataDone,
+          ivAlive:false, timers:{ slow:!!slowTimer, creep:!!creepTimer, fade:!!fadeTimer, remove:!!removeTimer },
+          maskInDom:!!document.getElementById("vlLoadMask") }; }
       };
       /* 兜底：未捕获脚本异常 → 按失败处理，遮罩不会永久卡住（资源 404 不触发） */
       window.addEventListener("error",function(e){
@@ -56427,6 +56468,7 @@ f 2641 2636 2638
 f 2641 2639 2640
 
 </script>
+<script>__vlP&&__vlP(10)</script>
 <script type="text/plain" class="meshobj" data-key="ctObL" data-src="环甲肌斜部-左" data-sid="ct" data-cat="muscle" data-fiber="1">
 v 0.169 -0.728 0.141
 v 0.165 -0.728 0.127
@@ -109618,6 +109660,7 @@ f 2232 2251 2250
 f 2250 2231 2240
 
 </script>
+<script>__vlP&&__vlP(19)</script>
 <script type="text/plain" class="meshobj" data-key="oaL" data-src="杓斜肌-左" data-sid="oa" data-cat="muscle" data-fiber="1">
 v -0.343 -0.005 -0.493
 v -0.343 -0.019 -0.517
@@ -176779,6 +176822,7 @@ f 12126 12096 11991
 f 12126 11991 11998
 
 </script>
+<script>__vlP&&__vlP(32)</script>
 <script type="text/plain" class="meshobj" data-key="mand40" data-src="FJ3289" data-sid="" data-cat="bone">
 v -2.514 4.286 -0.475
 v -2.514 4.338 -0.446
@@ -224232,6 +224276,7 @@ f 2414 2418 2419
 f 2433 2431 2430
 
 </script>
+<script>__vlP&&__vlP(40)</script>
 <script type="text/plain" class="meshobj" data-key="ribL8" data-src="FJ3235" data-sid="ribs" data-cat="bone">
 v 6.096 -13.602 -0.757
 v 6.091 -13.517 -0.705
@@ -279823,6 +279868,7 @@ f 2506 2430 2426
 f 2429 2508 2438
 
 </script>
+<script>__vlP&&__vlP(50)</script>
 <script type="text/plain" class="meshobj" data-key="ribR7" data-src="FJ3346" data-sid="ribs" data-cat="bone">
 v -0.691 -7.985 -3.553
 v -0.681 -7.901 -3.501
@@ -339271,6 +339317,7 @@ f 1554 1551 1540
 f 1561 1559 1554
 
 </script>
+<script>__vlP&&__vlP(60)</script>
 <script type="text/plain" class="meshobj" data-key="masDepL" data-src="咬肌深部-左" data-sid="mas" data-cat="muscle" data-fiber="1">
 v 1.664 1.448 1.217
 v 1.669 1.504 1.241
@@ -404099,6 +404146,7 @@ f 5247 5354 5357
 f 5258 5247 5357
 
 </script>
+<script>__vlP&&__vlP(71)</script>
 <script type="text/plain" class="meshobj" data-key="lungR2" data-src="右肺中叶" data-sid="lungs" data-cat="organ">
 v -5.753 -9.649 0.611
 v -5.739 -9.701 0.719
@@ -441871,6 +441919,7 @@ f 8484 8553 8554
 f 8485 8484 8554
 
 </script>
+<script>__vlP&&__vlP(78)</script>
 <script type="text/plain" class="meshobj" data-key="lungL1" data-src="左肺上叶" data-sid="lungs" data-cat="organ">
 v 0.207 -7.482 2.956
 v 0.249 -7.492 2.829
@@ -506357,6 +506406,7 @@ f 968 970 969
 f 971 962 969
 f 971 969 970
 </script>
+<script>__vlP&&__vlP(90)</script>
 <script type="text/plain" class="meshobj" data-key="thyrR" data-src="胸骨甲状肌-右" data-sid="thyr" data-cat="muscle">
 # 悬吊肌真件（BodyParts3D 4.0；Y0 符号已修正：z=(-y_bp3d-106.5)*S）
 v -1.056 -3.958 0.713
@@ -540116,6 +540166,7 @@ f 264 243 245
 f 263 261 264
 f 239 236 262
 </script>
+<script>__vlP&&__vlP(100)</script>
 <script>
 (function(){
 'use strict';
@@ -547437,7 +547488,7 @@ async function initThree(){
       try{ updateLabels(); }catch(eL){ if(!T._errOnce){ T._errOnce=true; console.error('[自检·标签] 每帧标签更新异常（首报）：', eL); } }
       T._rn=(T._rn||0)+1;   /* 渲染行帧计数（区分「主循环在跑」与「渲染行到达」——粒子冻结定位用） */
       (outlineFx||renderer).render(scene,camera);
-      if(T._rn===1&&window.__vlLoad){ window.__vlLoad.firstFrame(); }   /* v2.63：3D 首帧真实渲染完成 → 遮罩停留 350ms 后淡出 */
+      if(T._rn===1&&window.__vlLoad){ window.__vlLoad.firstFrame(); }   /* v2.64：3D 首帧真实渲染完成 → 遮罩停留 350ms 后淡出 */
     };
 
     /* --- 只读调试口（自检/走查用）：挂载集合与统一坐标系变换 --- */
@@ -547521,7 +547572,7 @@ async function initThree(){
     fb.title='3D 未加载：请确认 lib 目录完整并通过 http(s) 打开';
     fb.classList.remove('hidden');
     $('glTip').classList.add('hidden');
-    if(window.__vlLoad){ window.__vlLoad.fail(err); }   /* v2.63：3D 降级分支 → 遮罩立即淡出，露出下方原有中文失败提示 */
+    if(window.__vlLoad){ window.__vlLoad.fail(err); }   /* v2.64：3D 降级分支 → 遮罩立即淡出，露出下方原有中文失败提示 */
   }
 }
 
