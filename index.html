@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="免费 3D 喉部解剖与发声教学演示，含六块喉内肌演示和第1课 15 题自测；可离线使用（需同时带 lib 目录）。">
 <link rel="icon" href="data:,">
-<title>声乐教学喉部模型3D演示版 v2.65</title>
+<title>声乐教学喉部模型3D演示版 v2.66</title>
 <style>
 /* ========== 纸面图册主题（书页风） ========== */
 :root{
@@ -88,6 +88,19 @@ main{ flex:1; display:flex; min-height:0; }
 .side .actFix{ flex:0 0 auto; height:84px; overflow:hidden; }   /* M2：操作键+透明度滑杆常驻条 */
 .panel{ background:var(--panel); border:1px solid #d9cfb8; border-radius:10px; padding:10px 12px; }
 .panel h2{ font-size:13px; margin:0 0 8px; color:var(--acc); font-weight:600; }
+/* ---------- v2.66 知识卡页眉：「知识卡」标题 + 「再次演示」小按钮同一行（靠右） ----------
+   按钮 24px 高 < h2 行盒(13px×1.65 + 8px 下边距≈29.45px)，故页眉总高不变（不动下方布局）；
+   无演示记录时按钮带 .hidden 隐藏（见 #btnReplay 逻辑），初始态=v2.65 原样。 */
+.panelHead{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.panelHead h2{ flex:1 1 auto; }   /* 标题占满页眉行：按钮隐藏时与 v2.65 同宽（零位移），显示时靠右让位 */
+#btnReplay{
+  flex:0 0 auto; display:inline-flex; align-items:center; height:24px; padding:0 9px;
+  font:inherit; font-size:12px; line-height:1; white-space:nowrap;
+  border-radius:10px; background:var(--panel); border:1px solid var(--line); color:var(--dim);
+  cursor:pointer;
+}
+#btnReplay:hover{ background:#f1ead7; border-color:var(--acc); color:var(--txt); }
+#btnReplay:focus-visible{ outline:2px solid var(--acc); outline-offset:1px; }
 button{
   background:#efe6d0; color:#3a3428; border:1px solid #c9bb98; border-radius:8px;
   padding:7px 14px; cursor:pointer; font-size:13px;
@@ -385,7 +398,7 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
 <body>
 <header>
   <div class="hLeft">
-    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.65</span></h1>
+    <h1>声乐教学喉部模型3D演示版 <span class="sub">v2.66</span></h1>
     <div class="tagline">我想让每个普通人学得起唱歌 · 刘伟晨</div>
   </div>
   <!-- M4：独立「联动」页移除——顶部四标签改为可勾选图层：
@@ -516,7 +529,11 @@ input[type=range]{ width:100%; accent-color:var(--acc); }
     <!-- ══ 分② 当前层·结构与演示： 播放器常驻顶部（当前演示名+⏸/▶+进度条+变速）＋
             演示/探索双模式一键切换 ＋ 点选信息卡＋结构列表＋该层演示键就近 ══ -->
     <section class="panel zone zone2">
+      <div class="panelHead">
       <h2>知识卡</h2>   <!-- 卡头改「知识卡」（约定）；focusName 引用有 $ 兜底 -->
+      <!-- v2.66「再次演示」：重放上一次演示（手机端演示键在页面下方，滑上来一键再看开头）；无记录时隐藏 -->
+      <button type="button" id="btnReplay" class="hidden" aria-label="再次演示上一次的演示动作" title="重放上一次演示">再次演示</button>
+      </div>
       <!-- M2：知识卡区固定高度内部滚动——其上文字变化不再推移两功能区（约定②） -->
       <div class="cardFix">
       <div id="infoName">未选择</div>
@@ -540572,12 +540589,67 @@ function demoBtnSync(curKey){
     b.classList.toggle('active', key===curKey);
   });
 }
+/* ================================================================
+ * v2.66「再次演示」：记住最后一次触发过的演示（类型＋参数）→ 页眉小按钮一键重放
+ * 用法动机：手机端演示键在页面下方，滑下去点完再滑回来看不到开头。
+ * 实现纪律：只「记录＋统一派发」，重放一律走各演示键原有的触发入口
+ *           （muscle=launchMuscleDemoById／ap·clo·reg=对应按钮的 click 处理器），
+ *           不复制任何演示/动画逻辑，故与首次触发的行为、复位链完全一致。
+ * 记录入口：launchMuscleDemoById()（六肌：列表选中后「▶ 演示这块肌肉」/双击肌肉）
+ *           data-ap 点击块（cricBack/cricFwd/ctta/glottis）
+ *           data-clo 点击块（good/spindle/posterior/hourglass）
+ *           data-reg 点击块（chest/falsetto）
+ * ================================================================ */
+var LAST_DEMO=null;                                   /* {t:'muscle'|'ap'|'clo'|'reg', p:id} */
+function recLastDemo(t,p){ LAST_DEMO={t:t,p:p}; try{ syncReplayBtn(); }catch(eR){ } }
+function syncReplayBtn(){                             /* 无记录=隐藏；喉部演示区不在本层=隐藏（不做「点了没反应」的键） */
+  var b=document.getElementById('btnReplay'); if(!b){ return; }
+  var show=!!LAST_DEMO;
+  if(show){ var dl=document.getElementById('demo-larynx'); if(dl && dl.classList.contains('hidden')){ show=false; } }
+  b.classList.toggle('hidden', !show);
+}
+function replayLastDemo(){
+  var r=LAST_DEMO; if(!r){ return false; }
+  try{
+    var b;
+    if(r.t==='muscle'){ launchMuscleDemoById(r.p); return true; }   /* 与「▶ 演示这块肌肉」同一入口（内部重 launch＝从 0 秒重来） */
+    if(r.t==='ap'){
+      b=document.querySelector('#demo-larynx button[data-ap="'+r.p+'"]'); if(!b){ return false; }
+      if(b.classList.contains('active')){ b.classList.remove('active'); }   /* 复位单选态：否则处理器走「再点=取消」分支 */
+      b.click(); return true;
+    }
+    if(r.t==='clo'){
+      b=document.querySelector('#demo-larynx button[data-clo="'+r.p+'"]'); if(!b){ return false; }
+      if(state.larynx.closure===r.p){ state.larynx.closure=null; try{ if(T._crowSync){ T._crowSync(null); } }catch(eC){} }   /* 闭合键是开关：先把「已选」清掉，重放才重新启动 */
+      b.click(); return true;
+    }
+    if(r.t==='reg'){
+      b=document.querySelector('#demo-larynx button[data-reg="'+r.p+'"]'); if(!b){ return false; }
+      if(state.larynx.register!==r.p){ b.click(); return true; }        /* 已不在该声区=直接点回来（原处理器全流程） */
+      /* 仍在该声区：声区键本身是开关，再点会「关闭」——重放改为原地重演入场分步，
+         走的仍是同一引擎入口 T.setRegister（按钮处理器里调的就是它） */
+      if(T.setRegister){ T.setRegister(r.p); }
+      syncRegisterRow(); demoBtnSync('reg:'+r.p);
+      var D=REG_DEMOS[r.p];
+      if(D){ $('infoName').textContent=D.name; $('infoText').textContent=D.info; }
+      setAntagField(null);
+      return true;
+    }
+  }catch(e){ return false; }
+  return false;
+}
+(function bindReplayBtn(){
+  var b=document.getElementById('btnReplay'); if(!b){ return; }
+  b.addEventListener('click', function(){ try{ replayLastDemo(); }catch(eRP){ } });
+  syncReplayBtn();
+})();
 /* 单肌演示统一入口（起多选列表「演示」键与既有 muscleDemoRow 共用；
     起经公共播放器 launch：末帧钳制/可 scrub/变速） */
 function launchMuscleDemoById(id){
   var all=LARYNX_ACTIONS.concat(LARYNX_ACTIONS_V07), a=null, k;
   for(k=0;k<all.length;k++){ if(all[k].id===id){ a=all[k]; break; } }
   if(!a) return;
+  recLastDemo('muscle', id);            /* v2.66：记住最后一次演示（六肌） */
   if((id==='ia'||id==='oa') && state.larynx.meshMode!=='real' && T.setMeshMode){ T.setMeshMode('real'); }
   if(T.setRegister){ try{ T.setRegister(null); }catch(eR){} }
   syncRegisterRow();
@@ -541204,6 +541276,16 @@ var T = { ready:false, update:null, refreshEmissive:null, setHover:null, sizeSta
 window.__vlT=T;   /* 只读调试口（走查/自检用，不参与功能逻辑） */
 T._demoBtnSync=demoBtnSync;   /* 挂载点在 T 定义后（旧位置 T 未定义=TypeError 崩 IIFE 教训） */
 T.debugLaunch=function(id){ try{ launchMuscleDemoById(id); }catch(eL){ return String(eL); } };   /* 验收用演示触发口（只读约定：不参与功能逻辑） */
+T.debugReplay=function(){    /* v2.66 只读复验口：再次演示的记录/按钮态/重放（不参与功能逻辑） */
+  var b=document.getElementById('btnReplay');
+  var r=b?b.getBoundingClientRect():null;
+  return { rec:(LAST_DEMO?{t:LAST_DEMO.t,p:LAST_DEMO.p}:null),
+           btn:(b?{ hidden:b.classList.contains('hidden'), text:b.textContent, disabled:!!b.disabled,
+                    h:r?+r.height.toFixed(2):null, w:r?+r.width.toFixed(2):null } : null),
+           reg:(state.larynx.register||null), regT0:(state.larynx._regT0||null),
+           demoId:(state.larynx.demo?state.larynx.demo.id:null),
+           demoT:(state.larynx.demo?+state.larynx.demo.t.toFixed(3):null) };
+};
 
 /* ================================================================
  * M1-M3 公共层：演示规格 DEMO_SPEC ＋ 对抗节拍 ＋ 六肌独立色相调色板
@@ -541821,6 +541903,7 @@ updatePitchZone(true);
           $('infoName').textContent=D.name;
           $('infoText').textContent=D.text;
           demoBtnSync('clo:'+cur);   /* 统一红 */
+          recLastDemo('clo', cur);   /* v2.66：记住最后一次演示（闭合三态） */
         }else{
           if(PLAYER.active('larynx') && PLAYER.active().id==='clo:'+id){ PLAYER.clear(); }
           else if(T.setClosure){ try{ T.setClosure(null); }catch(eC){} }
@@ -541879,6 +541962,7 @@ updatePitchZone(true);
           $('infoText').textContent=D.info;
           demoBtnSync('ap:'+ap);   /* 本键红（launch 后设——launch 内部 restore 会清红，顺序教训） */
           setAntagField(null);
+          recLastDemo('ap', ap);   /* v2.66：记住最后一次演示（正确示范 preset） */
         }catch(e){}
       });
     });
@@ -541901,6 +541985,7 @@ updatePitchZone(true);
             $('infoName').textContent=D.name;
             $('infoText').textContent=D.info;
             setAntagField(null);
+            recLastDemo('reg', cur);   /* v2.66：记住最后一次演示（声区） */
           }else{
             updateInfoCard();                    /* 取消声区：回到当前选中卡 */
           }
@@ -542291,6 +542376,7 @@ function syncAllPanels(resetAcc){
     var el=$('structList-'+c); if(el){ el.classList.toggle('hidden', c!==fk); }
   });
   var dl=$('demo-larynx'); if(dl){ dl.classList.toggle('hidden', !(fk==='larynx'&&on.larynx)); }
+  try{ syncReplayBtn(); }catch(eRPs){}   /* v2.66：再次演示按钮跟随喉部演示区显隐 */
   var df=$('demo-face');   if(df){ df.classList.toggle('hidden', !(fk==='face'&&on.face)); }
   /* M4：其他层折叠节按需显隐——喉部默认态下侧栏只出现喉部内容 */
   document.querySelectorAll('.layItem[data-lay]').forEach(function(it){
